@@ -1,0 +1,22 @@
+# Interpreter Project
+
+## Overview
+
+This project is an interpreter for a custom programming language. It takes source code written in the custom language and executes it.
+
+## Features
+
+- Lexical analysis
+- Syntax parsing
+- Semantic analysis
+- Code execution
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.x
+
+### Installation
+
+Clone the repository:
