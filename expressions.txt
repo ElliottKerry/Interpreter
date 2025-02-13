@@ -1,0 +1,16 @@
+#5 + 5
+#!(5 - 4 > 3 * 2 == !false)
+
+#"hello" + " " + "world"
+#"foo" + "bar" == "foobar"
+#"10 corgis" 
+quickMaths = quickMaths + 2
+
+#floatTest = 1.0
+#floatTest = floatTest + 5
+#print floatTest!= "10" + "corgis"
+
+quickMaths = 10
+
+#stringCatTest = "10 corgis"
+#stringCatTest = stringCatTest + 5 + " more corgis"
