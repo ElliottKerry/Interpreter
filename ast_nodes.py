@@ -61,3 +61,41 @@ class While(Expr):
         self.body = body            # The body is typically a statement or a block.
     def __repr__(self):
         return f"While({self.condition}, {self.body})"
+    
+class Block(Expr):
+    def __init__(self, statements):
+        self.statements = statements  # List of statements/expressions
+    def __repr__(self):
+        return f"Block({self.statements})"
+    
+class If(Expr):
+    def __init__(self, condition, then_branch):
+        self.condition = condition
+        self.then_branch = then_branch
+    def __repr__(self):
+        return f"If({self.condition}, {self.then_branch})"
+    
+class If(Expr):
+    def __init__(self, condition, then_branch, else_branch=None):
+        self.condition = condition
+        self.then_branch = then_branch
+        self.else_branch = else_branch  # Optional else branch
+    def __repr__(self):
+        if self.else_branch:
+            return f"If({self.condition}, {self.then_branch}, {self.else_branch})"
+        else:
+            return f"If({self.condition}, {self.then_branch})"
+        
+class ListLiteral(Expr):
+    def __init__(self, elements):
+        self.elements = elements  # A list of expressions
+
+    def __repr__(self):
+        return f"ListLiteral({self.elements})"
+    
+class ListAccess(Expr):
+    def __init__(self, list_expr, index_expr):
+        self.list_expr = list_expr
+        self.index_expr = index_expr
+    def __repr__(self):
+        return f"ListAccess({self.list_expr}, {self.index_expr})"

@@ -1,16 +1,21 @@
-#5 + 5
-#!(5 - 4 > 3 * 2 == !false)
+#print 5 + 5
+#print !(5 - 4 > 3 * 2 == !false)
 
 #"hello" + " " + "world"
 #"foo" + "bar" == "foobar"
-#"10 corgis" 
-quickMaths = quickMaths + 2
+#"10 corgis" != "10" + "corgis"
+
+#quickMaths = 10
+#quickMaths = quickMaths + 2
 
 #floatTest = 1.0
 #floatTest = floatTest + 5
-#print floatTest!= "10" + "corgis"
-
-quickMaths = 10
+#print floatTest
 
 #stringCatTest = "10 corgis"
 #stringCatTest = stringCatTest + 5 + " more corgis"
+
+{
+    myList = [1, 2, 3, 4]
+    print myList[1]
+}

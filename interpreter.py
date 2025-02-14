@@ -30,7 +30,11 @@ class Interpreter:
             right_val = self.evaluate(expr.right)
 
             if expr.operator == "+":
+                # If one operand is a string, convert both to strings for concatenation.
+                if isinstance(left_val, str) or isinstance(right_val, str):
+                    return str(left_val) + str(right_val)
                 return left_val + right_val
+
             elif expr.operator == "-":
                 return left_val - right_val
             elif expr.operator == "*":
@@ -63,6 +67,12 @@ class Interpreter:
             else:
                 raise Exception(f"Unknown unary operator: {expr.operator}")
             
+        elif isinstance(expr, Block):
+            result = None
+            for statement in expr.statements:
+                result = self.evaluate(statement)
+            return result
+                    
         elif isinstance(expr, While):
             # Evaluate the condition and execute the body as long as it's true.
             while self.evaluate(expr.condition):
@@ -76,5 +86,25 @@ class Interpreter:
             print(">>", value)
             return value
         
+        elif isinstance(expr, ListAccess):
+            list_val = self.evaluate(expr.list_expr)
+            index_val = self.evaluate(expr.index_expr)
+            try:
+                return list_val[int(index_val)]
+            except Exception as e:
+                raise Exception(f"Error accessing list at index {index_val}: {e}")
+                
+        elif isinstance(expr, ListLiteral):
+            # Evaluate each element in the list and return a Python list.
+            return [self.evaluate(element) for element in expr.elements]
+            
+        elif isinstance(expr, If):
+            if self.evaluate(expr.condition):
+                return self.evaluate(expr.then_branch)
+            elif expr.else_branch is not None:
+                return self.evaluate(expr.else_branch)
+            else:
+                return None
+                        
         else:
             raise Exception("Unknown expression type")

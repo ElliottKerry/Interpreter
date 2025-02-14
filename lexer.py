@@ -3,31 +3,38 @@
 from enum import Enum
 
 class TokenType(Enum):
-    NUMBER       = "NUMBER"
-    STRING       = "STRING"
-    PLUS         = "PLUS"
-    MINUS        = "MINUS"
-    STAR         = "STAR"
-    SLASH        = "SLASH"
-    LEFT_PAREN   = "LEFT_PAREN"
-    RIGHT_PAREN  = "RIGHT_PAREN"
-    TRUE         = "TRUE"
-    FALSE        = "FALSE"
-    EQUALS       = "EQUALS"      # for ==
-    NOT_EQUALS   = "NOT_EQUALS"  # for !=
-    LESS         = "LESS"        # for <
-    GREATER      = "GREATER"     # for >
-    LESS_EQ      = "LESS_EQ"     # for <=
-    GREATER_EQ   = "GREATER_EQ"  # for >=
-    NOT          = "NOT"         # for ! (or you could also support "not")
-    AND          = "AND"         # for and
-    OR           = "OR"          # for or
-    EOF          = "EOF"
-    IDENTIFIER   = "IDENTIFIER"  # Variables
-    ASSIGN       = "ASSIGN"      # Single '='
-    PRINT        = "PRINT"       # <-- New token type for print
-    WHILE        = "WHILE"      # New token for while loops
-
+    NUMBER         = "NUMBER"
+    STRING         = "STRING"
+    PLUS           = "PLUS"
+    MINUS          = "MINUS"
+    STAR           = "STAR"
+    SLASH          = "SLASH"
+    LEFT_PAREN     = "LEFT_PAREN"
+    RIGHT_PAREN    = "RIGHT_PAREN"
+    TRUE           = "TRUE"
+    FALSE          = "FALSE"
+    EQUALS         = "EQUALS"      # for ==
+    NOT_EQUALS     = "NOT_EQUALS"  # for !=
+    LESS           = "LESS"        # for <
+    GREATER        = "GREATER"     # for >
+    LESS_EQ        = "LESS_EQ"     # for <=
+    GREATER_EQ     = "GREATER_EQ"  # for >=
+    NOT            = "NOT"         # for ! (or you could also support "not")
+    AND            = "AND"         # for and
+    OR             = "OR"          # for or
+    EOF            = "EOF"
+    IDENTIFIER     = "IDENTIFIER"  # Variables
+    ASSIGN         = "ASSIGN"      # Single '='
+    PRINT          = "PRINT"       # <-- New token type for print
+    WHILE          = "WHILE"      # New token for while loops
+    LEFT_BRACE     = "LEFT_BRACE"   # for {
+    RIGHT_BRACE    = "RIGHT_BRACE"  # for }
+    IF             = "IF"         # New token for if statements
+    THEN           = "THEN"       # New token for then keyword
+    ELSE           = "ELSE"    # <-- New token type for else
+    LEFT_BRACKET   = "LEFT_BRACKET"   # for [
+    RIGHT_BRACKET  = "RIGHT_BRACKET"  # for ]
+    COMMA          = "COMMA"          # for ,
 
 class Token:
     def __init__(self, type_, value):
@@ -61,12 +68,27 @@ class Tokenizer:
             # Skip whitespace
             if ch.isspace():
                 continue
+
+            # Skip comments (everything until the end of the line)
+            if ch == '#':
+                while self.peek() is not None and self.peek() != '\n':
+                    self.advance()
+                continue
+
             # Numbers (including decimals)
             if ch.isdigit() or ch == '.':
                 num_value = ch
                 while self.peek() and (self.peek().isdigit() or self.peek() == '.'):
                     num_value += self.advance()
                 self.tokens.append(Token(TokenType.NUMBER, float(num_value)))
+                continue
+
+            if ch == '{':
+                self.tokens.append(Token(TokenType.LEFT_BRACE, ch))
+                continue
+
+            if ch == '}':
+                self.tokens.append(Token(TokenType.RIGHT_BRACE, ch))
                 continue
 
             if ch.isalpha():
@@ -90,8 +112,27 @@ class Tokenizer:
                     self.tokens.append(Token(TokenType.PRINT, ident))
                 elif lower_ident == "while":  # New check for while
                     self.tokens.append(Token(TokenType.WHILE, ident))
+                elif lower_ident == "if":               # <-- New keyword for if
+                    self.tokens.append(Token(TokenType.IF, ident))
+                elif lower_ident == "then":             # <-- New keyword for then
+                    self.tokens.append(Token(TokenType.THEN, ident))
+                elif lower_ident == "else":  # New check for else keyword
+                    self.tokens.append(Token(TokenType.ELSE, ident))
                 else:
                     self.tokens.append(Token(TokenType.IDENTIFIER, ident))  # Store as a variable
+                continue
+
+            # Single-character tokens
+            if ch == '[':
+                self.tokens.append(Token(TokenType.LEFT_BRACKET, ch))
+                continue
+
+            if ch == ']':
+                self.tokens.append(Token(TokenType.RIGHT_BRACKET, ch))
+                continue
+
+            if ch == ',':
+                self.tokens.append(Token(TokenType.COMMA, ch))
                 continue
 
             # Single-character arithmetic tokens
