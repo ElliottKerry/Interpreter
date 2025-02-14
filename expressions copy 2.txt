@@ -1,0 +1,31 @@
+1 - 2
+2.5 + 2.5 - 1.25
+(10 * 2) / 6
+8.5 / (2 * 9) - -3
+true == false
+true != false
+(5 < 10)
+!(5 - 4 > 3 * 2 == !false)
+true and true
+false and true
+(0 < 1) or false
+false or false
+"hello" + " " + "world"
+"foo" + "bar" == "foobar"
+"10 corgis" != "10" + "corgis"
+
+quickMaths = 10
+quickMaths = quickMaths + 2
+print quickMaths
+
+floatTest = 1.0
+floatTest = floatTest + 5
+print floatTest
+
+stringCatTest = "10 corgis"
+stringCatTest = stringCatTest + 5 + "more corgis"
+print stringCatTest
+
+errorTest = 5
+errorTest = errorTest + "insert string here"
+print errorTest
