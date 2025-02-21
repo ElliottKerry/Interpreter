@@ -57,6 +57,18 @@ class Interpreter:
                 return left_val and right_val
             elif expr.operator == "or":
                 return left_val or right_val
+            
+        elif isinstance(expr, MemberCall):
+            object_val = self.evaluate(expr.object_expr)
+            args = [self.evaluate(arg) for arg in expr.arguments]
+            # Check if this is a push_back call on a list.
+            if isinstance(object_val, list) and expr.member_name == "push_back":
+                if len(args) != 1:
+                    raise Exception("push_back requires exactly one argument")
+                object_val.append(args[0])
+                return object_val
+            else:
+                raise Exception(f"Unknown member function '{expr.member_name}' on object {object_val}")
 
         elif isinstance(expr, Unary):
             operand = self.evaluate(expr.operand)

@@ -99,3 +99,11 @@ class ListAccess(Expr):
         self.index_expr = index_expr
     def __repr__(self):
         return f"ListAccess({self.list_expr}, {self.index_expr})"
+
+class MemberCall(Expr):
+    def __init__(self, object_expr, member_name, arguments):
+        self.object_expr = object_expr
+        self.member_name = member_name  # e.g. "push_back"
+        self.arguments = arguments      # a list of expressions
+    def __repr__(self):
+        return f"MemberCall({self.object_expr}, {self.member_name}, {self.arguments})"

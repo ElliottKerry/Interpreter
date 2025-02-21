@@ -167,6 +167,7 @@ class Parser:
     def factor(self):
         # Prefix operators
         token = self.peek()
+
         if token.type == TokenType.NUMBER:
             self.consume(TokenType.NUMBER)
             node = Number(token.value)
@@ -198,6 +199,28 @@ class Parser:
             node = Unary(op.value, right)
         else:
             raise SyntaxError(f"Unexpected token: {token}")
+        
+        # Handle member calls: e.g., myList.push_back(5)
+        while self.peek().type == TokenType.DOT:
+            self.consume(TokenType.DOT)  # Consume the dot.
+            member_token = self.consume(TokenType.IDENTIFIER)  # The member name.
+            member_name = member_token.value
+            # Check if it's a call by looking for '('
+            if self.peek().type == TokenType.LEFT_PAREN:
+                self.consume(TokenType.LEFT_PAREN)
+                arguments = []
+                if self.peek().type != TokenType.RIGHT_PAREN:
+                    while True:
+                        arguments.append(self.assignment_expr())
+                        if self.peek().type == TokenType.COMMA:
+                            self.consume(TokenType.COMMA)
+                        else:
+                            break
+                self.consume(TokenType.RIGHT_PAREN)
+                node = MemberCall(node, member_name, arguments)
+            else:
+                # Optionally support property access.
+                raise SyntaxError("Expected '(' after member name for method call")
         
         # Handle list access (postfix operator)
         while self.peek().type == TokenType.LEFT_BRACKET:

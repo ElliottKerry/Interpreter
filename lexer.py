@@ -35,6 +35,7 @@ class TokenType(Enum):
     LEFT_BRACKET   = "LEFT_BRACKET"   # for [
     RIGHT_BRACKET  = "RIGHT_BRACKET"  # for ]
     COMMA          = "COMMA"          # for ,
+    DOT            = "DOT"  # For '.'
 
 class Token:
     def __init__(self, type_, value):
@@ -76,11 +77,17 @@ class Tokenizer:
                 continue
 
             # Numbers (including decimals)
-            if ch.isdigit() or ch == '.':
+            # Only treat a dot as part of a number if it is followed by a digit.
+            if ch.isdigit() or (ch == '.' and self.peek() is not None and self.peek().isdigit()):
                 num_value = ch
                 while self.peek() and (self.peek().isdigit() or self.peek() == '.'):
                     num_value += self.advance()
                 self.tokens.append(Token(TokenType.NUMBER, float(num_value)))
+                continue
+
+            # If a dot is not part of a number, treat it as DOT.
+            if ch == '.':
+                self.tokens.append(Token(TokenType.DOT, ch))
                 continue
 
             if ch == '{':
@@ -93,10 +100,9 @@ class Tokenizer:
 
             if ch.isalpha():
                 ident = ch
-                while self.peek() and self.peek().isalnum():
+                while self.peek() and (self.peek().isalnum() or self.peek() == '_'):
                     ident += self.advance()
-                
-                # Reserved keywords (true, false, and, or, not)
+                # Reserved keywords (true, false, and, or, not, etc.)
                 lower_ident = ident.lower()
                 if lower_ident == "true":
                     self.tokens.append(Token(TokenType.TRUE, ident))
@@ -108,21 +114,21 @@ class Tokenizer:
                     self.tokens.append(Token(TokenType.OR, ident))
                 elif lower_ident == "not":
                     self.tokens.append(Token(TokenType.NOT, ident))
-                elif lower_ident == "print":  # <-- Check for print keyword
+                elif lower_ident == "print":
                     self.tokens.append(Token(TokenType.PRINT, ident))
-                elif lower_ident == "while":  # New check for while
+                elif lower_ident == "while":
                     self.tokens.append(Token(TokenType.WHILE, ident))
-                elif lower_ident == "if":               # <-- New keyword for if
+                elif lower_ident == "if":
                     self.tokens.append(Token(TokenType.IF, ident))
-                elif lower_ident == "then":             # <-- New keyword for then
+                elif lower_ident == "then":
                     self.tokens.append(Token(TokenType.THEN, ident))
-                elif lower_ident == "else":  # New check for else keyword
+                elif lower_ident == "else":
                     self.tokens.append(Token(TokenType.ELSE, ident))
                 else:
-                    self.tokens.append(Token(TokenType.IDENTIFIER, ident))  # Store as a variable
+                    self.tokens.append(Token(TokenType.IDENTIFIER, ident))
                 continue
 
-            # Single-character tokens
+            # Single-character tokens for lists
             if ch == '[':
                 self.tokens.append(Token(TokenType.LEFT_BRACKET, ch))
                 continue
@@ -204,4 +210,5 @@ class Tokenizer:
 
         self.tokens.append(Token(TokenType.EOF, None))
         return self.tokens
+
 

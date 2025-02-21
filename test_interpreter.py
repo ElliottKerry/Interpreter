@@ -168,6 +168,14 @@ def test_list_access(interpreter):
     assert interpreter.variables.get("first") == 1
     assert interpreter.variables.get("last") == 4
 
+def test_list_push_back(interpreter):
+    source = '''{
+    myList = [1, 2, 3, 4]
+    myList.push_back(5)
+    }'''
+    run_program(source, interpreter)
+    assert interpreter.variables.get("myList") == [1, 2, 3, 4, 5]
+    
 # Run the tests with: pytest test_interpreter.py
 if __name__ == '__main__':
     pytest.main()

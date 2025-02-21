@@ -17,17 +17,7 @@
 
 {
     myList = [1, 2, 3, 4]
-    print myList[1]
-}
-
-{
-    i = 0
-    while i < 3 {
-        j = 0
-        while j < 2 {
-            print "i:" + i + " j:" + j
-            j = j + 1
-        }
-        i = i + 1
-    }
+    print myList
+    myList.push_back(5)
+    print myList
 }
