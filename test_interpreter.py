@@ -147,6 +147,26 @@ def test_nested_while_loops(interpreter):
     run_program(source, interpreter)
     assert interpreter.variables.get("i") == 3
 
+# ---------------------------
+# Stage 6: Function Tests
+# ---------------------------
+
+def test_function_call(interpreter):
+    source = '''{
+    myList = [1, 2, 3, 4]
+    }'''
+    run_program(source, interpreter)
+    assert interpreter.variables.get("myList") == [1, 2, 3, 4]
+
+def test_list_access(interpreter):
+    source = '''{
+    myList = [1, 2, 3, 4]
+    first = myList[0]
+    last = myList[3]
+    }'''
+    run_program(source, interpreter)
+    assert interpreter.variables.get("first") == 1
+    assert interpreter.variables.get("last") == 4
 
 # Run the tests with: pytest test_interpreter.py
 if __name__ == '__main__':
