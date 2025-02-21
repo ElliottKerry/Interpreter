@@ -70,7 +70,7 @@ class Interpreter:
                 return left_val and right_val
             elif expr.operator == "or":
                 return left_val or right_val
-                    
+                            
         elif isinstance(expr, MemberCall):
             object_val = self.evaluate(expr.object_expr)
             args = [self.evaluate(arg) for arg in expr.arguments]
@@ -82,14 +82,13 @@ class Interpreter:
                     return object_val
                 elif expr.member_name == "remove":
                     if len(args) != 1:
-                        raise Exception("remove requires exactly one argument (the element to remove)")
+                        raise Exception("remove requires exactly one argument (the index to remove)")
                     try:
-                        # Use list.remove(value) to remove the first occurrence of the given value.
-                        value_to_remove = args[0]
-                        object_val.remove(value_to_remove)
-                        return value_to_remove
+                        index = int(args[0])
+                        removed = object_val.pop(index)
+                        return removed
                     except Exception as e:
-                        raise Exception(f"Error removing element {args[0]}: {e}")
+                        raise Exception(f"Error removing element at index {args[0]}: {e}")
                 else:
                     raise Exception(f"Unknown member function '{expr.member_name}' on list")
             else:

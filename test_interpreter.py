@@ -190,8 +190,8 @@ def test_list_remove(interpreter):
     removed = myList.remove(2)
     }'''
     run_program(source, interpreter)
-    assert interpreter.variables.get("myList") == [1, 3, 4]
-    assert interpreter.variables.get("removed") == 2
+    assert interpreter.variables.get("myList") == [1, 2, 4]
+    assert interpreter.variables.get("removed") == 3
 
 # Run the tests with: pytest test_interpreter.py
 if __name__ == '__main__':
