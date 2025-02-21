@@ -36,6 +36,8 @@ class TokenType(Enum):
     RIGHT_BRACKET  = "RIGHT_BRACKET"  # for ]
     COMMA          = "COMMA"          # for ,
     DOT            = "DOT"  # For '.'
+    FUN            = "FUN"       # New: function declaration
+    RETURN         = "RETURN"    # New: return keyword
 
 class Token:
     def __init__(self, type_, value):
@@ -124,6 +126,10 @@ class Tokenizer:
                     self.tokens.append(Token(TokenType.THEN, ident))
                 elif lower_ident == "else":
                     self.tokens.append(Token(TokenType.ELSE, ident))
+                elif lower_ident == "fun": 
+                    self.tokens.append(Token(TokenType.FUN, ident))
+                elif lower_ident == "return":
+                    self.tokens.append(Token(TokenType.RETURN, ident))
                 else:
                     self.tokens.append(Token(TokenType.IDENTIFIER, ident))
                 continue

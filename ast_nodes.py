@@ -107,3 +107,24 @@ class MemberCall(Expr):
         self.arguments = arguments      # a list of expressions
     def __repr__(self):
         return f"MemberCall({self.object_expr}, {self.member_name}, {self.arguments})"
+    
+class Function(Expr):
+    def __init__(self, name, parameters, body):
+        self.name = name              # a string
+        self.parameters = parameters  # list of parameter names (strings)
+        self.body = body              # a Block node (the function body)
+    def __repr__(self):
+        return f"Function({self.name}, {self.parameters}, {self.body})"
+
+class Return(Expr):
+    def __init__(self, value):
+        self.value = value
+    def __repr__(self):
+        return f"Return({self.value})"
+
+class Call(Expr):
+    def __init__(self, callee, arguments):
+        self.callee = callee
+        self.arguments = arguments
+    def __repr__(self):
+        return f"Call({self.callee}, {self.arguments})"

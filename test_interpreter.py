@@ -193,6 +193,17 @@ def test_list_remove(interpreter):
     assert interpreter.variables.get("myList") == [1, 2, 4]
     assert interpreter.variables.get("removed") == 3
 
+def test_function_call(interpreter):
+    source = '''{
+    fun add(a, b) {
+        return a + b
+    }
+    result = add(2, 3)
+    print result
+    }'''
+    run_program(source, interpreter)
+    assert interpreter.variables.get("result") == 5
+
 # Run the tests with: pytest test_interpreter.py
 if __name__ == '__main__':
     pytest.main()

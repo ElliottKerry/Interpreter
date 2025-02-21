@@ -1,9 +1,11 @@
 # interpreter.py
 from parser import *  # Adjust your import based on your project structure
 
+from parser import *  # Adjust your import based on your project structure
+
 class Interpreter:
     def __init__(self):
-        self.variables = {}  # Store variable values
+        self.variables = {}  # Store global variables
 
     def evaluate(self, expr):
         if isinstance(expr, Number):
@@ -70,7 +72,23 @@ class Interpreter:
                 return left_val and right_val
             elif expr.operator == "or":
                 return left_val or right_val
-                            
+
+        elif isinstance(expr, Function):
+            # A function definition evaluates to itself and is stored in the global environment.
+            self.variables[expr.name] = expr
+            return expr
+
+        elif isinstance(expr, Return):
+            return self.evaluate(expr.value)
+
+        elif isinstance(expr, Call):
+            callee = self.evaluate(expr.callee)
+            args = [self.evaluate(arg) for arg in expr.arguments]
+            if isinstance(callee, Function):
+                return self.call_function(callee, args)
+            else:
+                raise Exception("Attempted to call a non-function")
+
         elif isinstance(expr, MemberCall):
             object_val = self.evaluate(expr.object_expr)
             args = [self.evaluate(arg) for arg in expr.arguments]
@@ -107,17 +125,19 @@ class Interpreter:
             result = None
             for statement in expr.statements:
                 result = self.evaluate(statement)
+                # If a Return node is encountered, propagate it immediately.
+                if isinstance(result, Return):
+                    return result
             return result
-                    
+                            
         elif isinstance(expr, While):
-            # Evaluate the condition and execute the body as long as it's true.
             while self.evaluate(expr.condition):
-                self.evaluate(expr.body)
-            # Optionally return None (or some appropriate value) after the loop finishes.
+                result = self.evaluate(expr.body)
+                if isinstance(result, Return):
+                    return result
             return None
             
         elif isinstance(expr, Print):
-            # Evaluate the expression and print its result
             value = self.evaluate(expr.expr)
             print(">>", value)
             return value
@@ -131,7 +151,6 @@ class Interpreter:
                 raise Exception(f"Error accessing list at index {index_val}: {e}")
                 
         elif isinstance(expr, ListLiteral):
-            # Evaluate each element in the list and return a Python list.
             return [self.evaluate(element) for element in expr.elements]
             
         elif isinstance(expr, If):
@@ -144,3 +163,24 @@ class Interpreter:
                         
         else:
             raise Exception("Unknown expression type")
+
+    def call_function(self, func, args):
+        # Check parameter count
+        if len(args) != len(func.parameters):
+            raise Exception("Function argument count mismatch")
+        # Create a new environment for function execution.
+        # For simplicity, copy the current global environment.
+        local_env = self.variables.copy()
+        for param, arg in zip(func.parameters, args):
+            local_env[param] = arg
+        # Save the old environment.
+        old_env = self.variables
+        self.variables = local_env
+        try:
+            result = self.evaluate(func.body)
+            # If a return statement was encountered, extract its value.
+            if isinstance(result, Return):
+                result = result.value
+            return result
+        finally:
+            self.variables = old_env
