@@ -20,10 +20,23 @@ class Interpreter:
                 return self.variables[expr.name]
             raise Exception(f"Undefined variable: {expr.name}")
 
-        elif isinstance(expr, Assignment):  # Handle assignments
-            value = self.evaluate(expr.value)  # Ensure the right-hand side is evaluated
-            self.variables[expr.identifier.name] = value  # Store the new value
-            return value  # Return updated value
+        elif isinstance(expr, Assignment):
+            value = self.evaluate(expr.value)
+            # Check if the assignment target is an Identifier.
+            if isinstance(expr.target, Identifier):
+                self.variables[expr.target.name] = value
+                return value
+            # Else if the target is a ListAccess, update the element at that index.
+            elif isinstance(expr.target, ListAccess):
+                list_val = self.evaluate(expr.target.list_expr)
+                index_val = self.evaluate(expr.target.index_expr)
+                try:
+                    list_val[int(index_val)] = value
+                except Exception as e:
+                    raise Exception(f"Error assigning list element at index {index_val}: {e}")
+                return value
+            else:
+                raise Exception("Invalid assignment target")
 
         elif isinstance(expr, Binary):
             left_val = self.evaluate(expr.left)

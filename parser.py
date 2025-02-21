@@ -72,14 +72,12 @@ class Parser:
         return self.parse_statement()
 
     def assignment_expr(self):
-        node = self.equality_expr()  # Ensure full expressions are parsed
-
-        while self.peek().type == TokenType.ASSIGN:  # If there's an assignment operator (`=`)
+        node = self.equality_expr()  # Or starting from whatever expression rule is appropriate.
+        while self.peek().type == TokenType.ASSIGN:
             self.consume(TokenType.ASSIGN)
-            value = self.assignment_expr()  # Recursively parse the right-hand side
+            value = self.assignment_expr()  # Parse the right-hand side.
             node = Assignment(node, value)
-
-        return node
+        return node 
 
     def binary_expr(self, left=None):
         if left is None:

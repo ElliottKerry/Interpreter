@@ -43,11 +43,11 @@ class Identifier(Expr):
         return f"Identifier({self.name})"
 
 class Assignment(Expr):
-    def __init__(self, identifier, value):
-        self.identifier = identifier
+    def __init__(self, target, value):
+        self.target = target  # This can be an Identifier, ListAccess, etc.
         self.value = value
     def __repr__(self):
-        return f"Assignment({self.identifier}, {self.value})"
+        return f"Assignment({self.target}, {self.value})"
     
 class Print(Expr):
     def __init__(self, expr):

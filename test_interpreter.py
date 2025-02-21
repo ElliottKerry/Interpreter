@@ -175,7 +175,15 @@ def test_list_push_back(interpreter):
     }'''
     run_program(source, interpreter)
     assert interpreter.variables.get("myList") == [1, 2, 3, 4, 5]
-    
+
+def test_list_list_modification(interpreter):
+    source = '''{
+    myList = [1, 2, 3, 4]
+    myList[1] = 42
+    }'''
+    run_program(source, interpreter)
+    assert interpreter.variables.get("myList") == [1, 42, 3, 4]
+
 # Run the tests with: pytest test_interpreter.py
 if __name__ == '__main__':
     pytest.main()
