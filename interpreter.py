@@ -70,18 +70,30 @@ class Interpreter:
                 return left_val and right_val
             elif expr.operator == "or":
                 return left_val or right_val
-            
+                    
         elif isinstance(expr, MemberCall):
             object_val = self.evaluate(expr.object_expr)
             args = [self.evaluate(arg) for arg in expr.arguments]
-            # Check if this is a push_back call on a list.
-            if isinstance(object_val, list) and expr.member_name == "push_back":
-                if len(args) != 1:
-                    raise Exception("push_back requires exactly one argument")
-                object_val.append(args[0])
-                return object_val
+            if isinstance(object_val, list):
+                if expr.member_name == "push_back":
+                    if len(args) != 1:
+                        raise Exception("push_back requires exactly one argument")
+                    object_val.append(args[0])
+                    return object_val
+                elif expr.member_name == "remove":
+                    if len(args) != 1:
+                        raise Exception("remove requires exactly one argument (the element to remove)")
+                    try:
+                        # Use list.remove(value) to remove the first occurrence of the given value.
+                        value_to_remove = args[0]
+                        object_val.remove(value_to_remove)
+                        return value_to_remove
+                    except Exception as e:
+                        raise Exception(f"Error removing element {args[0]}: {e}")
+                else:
+                    raise Exception(f"Unknown member function '{expr.member_name}' on list")
             else:
-                raise Exception(f"Unknown member function '{expr.member_name}' on object {object_val}")
+                raise Exception(f"Member call on unsupported object type: {object_val}")
 
         elif isinstance(expr, Unary):
             operand = self.evaluate(expr.operand)

@@ -184,6 +184,15 @@ def test_list_list_modification(interpreter):
     run_program(source, interpreter)
     assert interpreter.variables.get("myList") == [1, 42, 3, 4]
 
+def test_list_remove(interpreter):
+    source = '''{
+    myList = [1, 2, 3, 4]
+    removed = myList.remove(2)
+    }'''
+    run_program(source, interpreter)
+    assert interpreter.variables.get("myList") == [1, 3, 4]
+    assert interpreter.variables.get("removed") == 2
+
 # Run the tests with: pytest test_interpreter.py
 if __name__ == '__main__':
     pytest.main()

@@ -16,8 +16,8 @@
 #stringCatTest = stringCatTest + 5 + " more corgis"
 
 {
-    myList = [1, 2, 3, 4]
-    print myList
-    myList[1] = 42
+    myList = [1, 2, 3, 4, 5]
+    removed = myList.remove(2)
+    print removed
     print myList
 }
