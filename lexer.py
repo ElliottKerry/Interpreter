@@ -84,7 +84,12 @@ class Tokenizer:
                 num_value = ch
                 while self.peek() and (self.peek().isdigit() or self.peek() == '.'):
                     num_value += self.advance()
-                self.tokens.append(Token(TokenType.NUMBER, float(num_value)))
+                # If the numeric string contains a dot, it's a float; otherwise, an int.
+                if '.' in num_value:
+                    value = float(num_value)
+                else:
+                    value = int(num_value)
+                self.tokens.append(Token(TokenType.NUMBER, value))
                 continue
 
             # If a dot is not part of a number, treat it as DOT.
@@ -126,7 +131,7 @@ class Tokenizer:
                     self.tokens.append(Token(TokenType.THEN, ident))
                 elif lower_ident == "else":
                     self.tokens.append(Token(TokenType.ELSE, ident))
-                elif lower_ident == "fun": 
+                elif lower_ident == "fun":
                     self.tokens.append(Token(TokenType.FUN, ident))
                 elif lower_ident == "return":
                     self.tokens.append(Token(TokenType.RETURN, ident))
@@ -183,6 +188,7 @@ class Tokenizer:
                     # Allow "!" as a shorthand for NOT.
                     self.tokens.append(Token(TokenType.NOT, ch))
                 continue
+
             if ch == '<':
                 if self.peek() == '=':
                     self.advance()
@@ -190,6 +196,7 @@ class Tokenizer:
                 else:
                     self.tokens.append(Token(TokenType.LESS, ch))
                 continue
+
             if ch == '>':
                 if self.peek() == '=':
                     self.advance()
@@ -216,5 +223,4 @@ class Tokenizer:
 
         self.tokens.append(Token(TokenType.EOF, None))
         return self.tokens
-
 
