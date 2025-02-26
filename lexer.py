@@ -1,8 +1,9 @@
-# lexer.py: Contains the Token and Tokenizer classes, which are used to tokenize the input string.
+# lexer.py: Contains the Token and Tokenizer classes, which are used to tokenize the input string, 
 
 from enum import Enum
 
 class TokenType(Enum):
+    """Enumeration of token types"""
     NUMBER         = "NUMBER"
     STRING         = "STRING"
     PLUS           = "PLUS"
@@ -25,21 +26,22 @@ class TokenType(Enum):
     EOF            = "EOF"
     IDENTIFIER     = "IDENTIFIER"  # Variables
     ASSIGN         = "ASSIGN"      # Single '='
-    PRINT          = "PRINT"       # <-- New token type for print
-    WHILE          = "WHILE"      # New token for while loops
-    LEFT_BRACE     = "LEFT_BRACE"   # for {
-    RIGHT_BRACE    = "RIGHT_BRACE"  # for }
-    IF             = "IF"         # New token for if statements
-    THEN           = "THEN"       # New token for then keyword
-    ELSE           = "ELSE"    # <-- New token type for else
-    LEFT_BRACKET   = "LEFT_BRACKET"   # for [
-    RIGHT_BRACKET  = "RIGHT_BRACKET"  # for ]
-    COMMA          = "COMMA"          # for ,
-    DOT            = "DOT"  # For '.'
-    FUN            = "FUN"       # New: function declaration
-    RETURN         = "RETURN"    # New: return keyword
+    PRINT          = "PRINT"       # for print
+    WHILE          = "WHILE"       # for while loops
+    LEFT_BRACE     = "LEFT_BRACE"  # for {
+    RIGHT_BRACE    = "RIGHT_BRACE" # for }
+    IF             = "IF"          # for if statements
+    THEN           = "THEN"        # for then keyword
+    ELSE           = "ELSE"        # for else
+    LEFT_BRACKET   = "LEFT_BRACKET"  # for [
+    RIGHT_BRACKET  = "RIGHT_BRACKET" # for ]
+    COMMA          = "COMMA"         # for ,
+    DOT            = "DOT"           # for '.'
+    FUN            = "FUN"           # for function declaration
+    RETURN         = "RETURN"        # for return keyword
 
 class Token:
+    """Represents a token with a type and an optional value."""
     def __init__(self, type_, value):
         self.type = type_
         self.value = value
@@ -48,6 +50,39 @@ class Token:
         return f"Token({self.type}, {repr(self.value)})"
 
 class Tokenizer:
+    """Tokenizes the input source code."""
+    # Single-character tokens mapping.
+    SINGLE_CHAR_TOKENS = {
+        '.': TokenType.DOT,
+        '{': TokenType.LEFT_BRACE,
+        '}': TokenType.RIGHT_BRACE,
+        '[': TokenType.LEFT_BRACKET,
+        ']': TokenType.RIGHT_BRACKET,
+        ',': TokenType.COMMA,
+        '+': TokenType.PLUS,
+        '-': TokenType.MINUS,
+        '*': TokenType.STAR,
+        '/': TokenType.SLASH,
+        '(': TokenType.LEFT_PAREN,
+        ')': TokenType.RIGHT_PAREN,
+    }
+
+    # Reserved keywords mapping.
+    KEYWORDS = {
+        "true": TokenType.TRUE,
+        "false": TokenType.FALSE,
+        "and": TokenType.AND,
+        "or": TokenType.OR,
+        "not": TokenType.NOT,
+        "print": TokenType.PRINT,
+        "while": TokenType.WHILE,
+        "if": TokenType.IF,
+        "then": TokenType.THEN,
+        "else": TokenType.ELSE,
+        "fun": TokenType.FUN,
+        "return": TokenType.RETURN,
+    }
+
     def __init__(self, source):
         self.source = source
         self.tokens = []
@@ -65,162 +100,109 @@ class Tokenizer:
             return self.source[self.current]
         return None
 
+    def match(self, expected):
+        if self.peek() == expected:
+            self.advance()
+            return True
+        return False
+
+    def add_token(self, token_type, value):
+        self.tokens.append(Token(token_type, value))
+
     def tokenize(self):
         while self.current < len(self.source):
             ch = self.advance()
-            # Skip whitespace
+
+            # Skip whitespace.
             if ch.isspace():
                 continue
 
-            # Skip comments (everything until the end of the line)
+            # Skip comments.
             if ch == '#':
                 while self.peek() is not None and self.peek() != '\n':
                     self.advance()
                 continue
 
-            # Numbers (including decimals)
-            # Only treat a dot as part of a number if it is followed by a digit.
-            if ch.isdigit() or (ch == '.' and self.peek() is not None and self.peek().isdigit()):
-                num_value = ch
-                while self.peek() and (self.peek().isdigit() or self.peek() == '.'):
-                    num_value += self.advance()
-                # If the numeric string contains a dot, it's a float; otherwise, an int.
-                if '.' in num_value:
-                    value = float(num_value)
-                else:
-                    value = int(num_value)
-                self.tokens.append(Token(TokenType.NUMBER, value))
+            # Numbers (handle decimals).
+            if ch.isdigit() or (ch == '.' and self.peek() and self.peek().isdigit()):
+                self.tokenize_number(ch)
                 continue
 
-            # If a dot is not part of a number, treat it as DOT.
-            if ch == '.':
-                self.tokens.append(Token(TokenType.DOT, ch))
+            # String literals.
+            if ch == '"':
+                self.tokenize_string()
                 continue
 
-            if ch == '{':
-                self.tokens.append(Token(TokenType.LEFT_BRACE, ch))
-                continue
-
-            if ch == '}':
-                self.tokens.append(Token(TokenType.RIGHT_BRACE, ch))
-                continue
-
+            # Identifiers and keywords.
             if ch.isalpha():
-                ident = ch
-                while self.peek() and (self.peek().isalnum() or self.peek() == '_'):
-                    ident += self.advance()
-                # Reserved keywords (true, false, and, or, not, etc.)
-                lower_ident = ident.lower()
-                if lower_ident == "true":
-                    self.tokens.append(Token(TokenType.TRUE, ident))
-                elif lower_ident == "false":
-                    self.tokens.append(Token(TokenType.FALSE, ident))
-                elif lower_ident == "and":
-                    self.tokens.append(Token(TokenType.AND, ident))
-                elif lower_ident == "or":
-                    self.tokens.append(Token(TokenType.OR, ident))
-                elif lower_ident == "not":
-                    self.tokens.append(Token(TokenType.NOT, ident))
-                elif lower_ident == "print":
-                    self.tokens.append(Token(TokenType.PRINT, ident))
-                elif lower_ident == "while":
-                    self.tokens.append(Token(TokenType.WHILE, ident))
-                elif lower_ident == "if":
-                    self.tokens.append(Token(TokenType.IF, ident))
-                elif lower_ident == "then":
-                    self.tokens.append(Token(TokenType.THEN, ident))
-                elif lower_ident == "else":
-                    self.tokens.append(Token(TokenType.ELSE, ident))
-                elif lower_ident == "fun":
-                    self.tokens.append(Token(TokenType.FUN, ident))
-                elif lower_ident == "return":
-                    self.tokens.append(Token(TokenType.RETURN, ident))
-                else:
-                    self.tokens.append(Token(TokenType.IDENTIFIER, ident))
+                self.tokenize_identifier(ch)
                 continue
 
-            # Single-character tokens for lists
-            if ch == '[':
-                self.tokens.append(Token(TokenType.LEFT_BRACKET, ch))
+            # Single-character tokens.
+            if ch in self.SINGLE_CHAR_TOKENS:
+                self.add_token(self.SINGLE_CHAR_TOKENS[ch], ch)
                 continue
 
-            if ch == ']':
-                self.tokens.append(Token(TokenType.RIGHT_BRACKET, ch))
-                continue
-
-            if ch == ',':
-                self.tokens.append(Token(TokenType.COMMA, ch))
-                continue
-
-            # Single-character arithmetic tokens
-            if ch == '+':
-                self.tokens.append(Token(TokenType.PLUS, ch))
-                continue
-            if ch == '-':
-                self.tokens.append(Token(TokenType.MINUS, ch))
-                continue
-            if ch == '*':
-                self.tokens.append(Token(TokenType.STAR, ch))
-                continue
-            if ch == '/':
-                self.tokens.append(Token(TokenType.SLASH, ch))
-                continue
-            if ch == '(':
-                self.tokens.append(Token(TokenType.LEFT_PAREN, ch))
-                continue
-            if ch == ')':
-                self.tokens.append(Token(TokenType.RIGHT_PAREN, ch))
-                continue
-
+            # Multi-character tokens.
             if ch == '=':
-                if self.peek() == '=':
-                    self.advance()
-                    self.tokens.append(Token(TokenType.EQUALS, "=="))  # Equality check
+                if self.match('='):
+                    self.add_token(TokenType.EQUALS, "==")
                 else:
-                    self.tokens.append(Token(TokenType.ASSIGN, "="))  # Assignment
+                    self.add_token(TokenType.ASSIGN, "=")
                 continue
 
             if ch == '!':
-                if self.peek() == '=':
-                    self.advance()
-                    self.tokens.append(Token(TokenType.NOT_EQUALS, "!="))
+                if self.match('='):
+                    self.add_token(TokenType.NOT_EQUALS, "!=")
                 else:
-                    # Allow "!" as a shorthand for NOT.
-                    self.tokens.append(Token(TokenType.NOT, ch))
+                    self.add_token(TokenType.NOT, "!")
                 continue
 
             if ch == '<':
-                if self.peek() == '=':
-                    self.advance()
-                    self.tokens.append(Token(TokenType.LESS_EQ, "<="))
+                if self.match('='):
+                    self.add_token(TokenType.LESS_EQ, "<=")
                 else:
-                    self.tokens.append(Token(TokenType.LESS, ch))
+                    self.add_token(TokenType.LESS, "<")
                 continue
 
             if ch == '>':
-                if self.peek() == '=':
-                    self.advance()
-                    self.tokens.append(Token(TokenType.GREATER_EQ, ">="))
+                if self.match('='):
+                    self.add_token(TokenType.GREATER_EQ, ">=")
                 else:
-                    self.tokens.append(Token(TokenType.GREATER, ch))
-                continue
-
-            if ch == '"':
-                string_value = ""
-                # Loop until the closing quote is found
-                while True:
-                    ch = self.advance()
-                    if ch is None:
-                        raise SyntaxError("Unterminated string literal")
-                    if ch == '"':
-                        break
-                    # Optionally handle escape sequences here
-                    string_value += ch
-                self.tokens.append(Token(TokenType.STRING, string_value))
+                    self.add_token(TokenType.GREATER, ">")
                 continue
 
             raise SyntaxError(f"Unexpected character: '{ch}'")
 
-        self.tokens.append(Token(TokenType.EOF, None))
+        self.add_token(TokenType.EOF, None)
         return self.tokens
 
+    def tokenize_number(self, first_char):
+        num_str = first_char
+        while self.peek() and (self.peek().isdigit() or self.peek() == '.'):
+            num_str += self.advance()
+        # Determine if the number is an int or a float.
+        if '.' in num_str:
+            value = float(num_str)
+        else:
+            value = int(num_str)
+        self.add_token(TokenType.NUMBER, value)
+
+    def tokenize_identifier(self, first_char):
+        ident = first_char
+        while self.peek() and (self.peek().isalnum() or self.peek() == '_'):
+            ident += self.advance()
+        # Check if the identifier is a reserved keyword.
+        token_type = self.KEYWORDS.get(ident.lower(), TokenType.IDENTIFIER)
+        self.add_token(token_type, ident)
+
+    def tokenize_string(self):
+        string_value = ""
+        while True:
+            ch = self.advance()
+            if ch is None:
+                raise SyntaxError("Unterminated string literal")
+            if ch == '"':
+                break
+            string_value += ch
+        self.add_token(TokenType.STRING, string_value)

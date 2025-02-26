@@ -1,9 +1,12 @@
 # interpreter.py
-from parser import *  # Adjust your import based on your project structure
+# The Interpreter class is responsible for evaluating the AST nodes produced by the parser. It contains a series of evaluate methods for each AST node type.
+# The evaluate method for each node type is responsible for evaluating the node and returning the result. 
+# The Interpreter class also contains a call_function method that is used to call user-defined functions.
 
 from parser import *  # Adjust your import based on your project structure
 
 class Interpreter:
+    """Evaluates an Abstract Syntax Tree (AST) produced by the Parser."""
     def __init__(self):
         self.variables = {}  # Store global variables
 

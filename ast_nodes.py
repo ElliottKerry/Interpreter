@@ -1,9 +1,11 @@
 # ast_nodes.py
 
 class Expr:
+    """Base class for all AST nodes, inheritance is used to define node types."""
     pass
 
 class Number(Expr):
+    """Represents a numeric literal."""
     def __init__(self, value):
         self.value = value
     def __repr__(self):

@@ -1,9 +1,12 @@
-#parser.py
+# parser.py
+# The parser.py file contains the Parser class, which is responsible for parsing the tokens produced by the Tokenizer into an Abstract Syntax Tree (AST). 
+# The AST represents the structure of the program in a hierarchical form that can be easily evaluated by the Interpreter.
 
 from lexer import TokenType  # TokenType now includes TRUE, FALSE, NOT, AND, OR, EQUALS, etc.
-from ast_nodes import * # Import all classes from ast_nodes.py
+from ast_nodes import *  # Import all classes from ast_nodes.py
 
 class Parser:
+    """Parses a list of tokens into an Abstract Syntax Tree (AST)."""
     def __init__(self, tokens):
         self.tokens = tokens
         self.current = 0
@@ -19,27 +22,25 @@ class Parser:
         raise SyntaxError(f"Expected token type {expected_type}, but got {token.type}")
 
     def parse_statement(self):
-        if self.peek().type == TokenType.RETURN:
+        token_type = self.peek().type
+        if token_type == TokenType.RETURN:
             self.consume(TokenType.RETURN)
             value = self.assignment_expr()
             return Return(value)
-        if self.peek().type == TokenType.FUN:
+        elif token_type == TokenType.FUN:
             return self.parse_function_declaration()
-        if self.peek().type == TokenType.LEFT_BRACE:
+        elif token_type == TokenType.LEFT_BRACE:
             return self.parse_block()
-        if self.peek().type == TokenType.PRINT:
+        elif token_type == TokenType.PRINT:
             self.consume(TokenType.PRINT)
             expr = self.assignment_expr()
             return Print(expr)
-        elif self.peek().type == TokenType.WHILE:
+        elif token_type == TokenType.WHILE:
             self.consume(TokenType.WHILE)
             condition = self.assignment_expr()
-            if self.peek().type == TokenType.LEFT_BRACE:
-                body = self.parse_block()
-            else:
-                body = self.parse_statement()
+            body = self.parse_block() if self.peek().type == TokenType.LEFT_BRACE else self.parse_statement()
             return While(condition, body)
-        elif self.peek().type == TokenType.IF:
+        elif token_type == TokenType.IF:
             self.consume(TokenType.IF)
             condition = self.assignment_expr()
             self.consume(TokenType.THEN)
@@ -51,33 +52,30 @@ class Parser:
             return If(condition, then_branch, else_branch)
         else:
             return self.assignment_expr()
-                
+
     def parse_function_declaration(self):
-        self.consume(TokenType.FUN)                  # Consume 'fun'
+        self.consume(TokenType.FUN)  # Consume 'fun'
         name_token = self.consume(TokenType.IDENTIFIER)
         name = name_token.value
-        self.consume(TokenType.LEFT_PAREN)           # Consume '('
+        self.consume(TokenType.LEFT_PAREN)  # Consume '('
         parameters = []
-        # If the next token isn't a RIGHT_PAREN, there are parameters.
         if self.peek().type != TokenType.RIGHT_PAREN:
-            # Consume the first parameter
             parameters.append(self.consume(TokenType.IDENTIFIER).value)
-            # Then, while a comma is present, consume it and the next parameter.
             while self.peek().type == TokenType.COMMA:
                 self.consume(TokenType.COMMA)
                 parameters.append(self.consume(TokenType.IDENTIFIER).value)
-        self.consume(TokenType.RIGHT_PAREN)          # Consume ')'
-        body = self.parse_block()                    # Parse the function body as a block
+        self.consume(TokenType.RIGHT_PAREN)  # Consume ')'
+        body = self.parse_block()            # Parse the function body as a block
         return Function(name, parameters, body)
 
     def parse_block(self):
         statements = []
-        self.consume(TokenType.LEFT_BRACE)  # Expect opening {
+        self.consume(TokenType.LEFT_BRACE)  # Expect opening '{'
         while self.peek().type != TokenType.RIGHT_BRACE:
             statements.append(self.parse_statement())
-        self.consume(TokenType.RIGHT_BRACE)  # Expect closing }
+        self.consume(TokenType.RIGHT_BRACE)  # Expect closing '}'
         return Block(statements)
-    
+
     def parse_program(self):
         statements = []
         while self.peek().type != TokenType.EOF:
@@ -85,28 +83,16 @@ class Parser:
         return Block(statements)
 
     def parse(self):
-        # Use the statement parser instead of just assignment_expr
         return self.parse_statement()
 
     def assignment_expr(self):
-        node = self.equality_expr()  # Or starting from whatever expression rule is appropriate.
+        node = self.equality_expr()
         while self.peek().type == TokenType.ASSIGN:
             self.consume(TokenType.ASSIGN)
-            value = self.assignment_expr()  # Parse the right-hand side.
+            value = self.assignment_expr()  # Right-hand side
             node = Assignment(node, value)
-        return node 
+        return node
 
-    def binary_expr(self, left=None):
-        if left is None:
-            left = self.add_expr()  # Start from addition expressions
-
-        while self.peek().type in (TokenType.PLUS, TokenType.MINUS, TokenType.STAR, TokenType.SLASH):
-            op = self.consume(self.peek().type)
-            right = self.add_expr()  # Parse the right-hand side
-            left = Binary(left, op.value, right)  # Create a Binary node
-
-        return left
-    # or_expr -> and_expr ( OR and_expr )*
     def or_expr(self):
         node = self.and_expr()
         while self.peek().type == TokenType.OR:
@@ -115,7 +101,6 @@ class Parser:
             node = Binary(node, op.value, right)
         return node
 
-    # and_expr -> equality_expr ( AND equality_expr )*
     def and_expr(self):
         node = self.equality_expr()
         while self.peek().type == TokenType.AND:
@@ -125,7 +110,7 @@ class Parser:
         return node
 
     def equality_expr(self):
-        node = self.relational_expr()  # Use relational_expr here
+        node = self.relational_expr()
         while self.peek().type in (TokenType.EQUALS, TokenType.NOT_EQUALS):
             op = self.consume(self.peek().type)
             right = self.relational_expr()
@@ -135,13 +120,12 @@ class Parser:
     def relational_expr(self):
         node = self.add_expr()
         while self.peek().type in (TokenType.LESS, TokenType.GREATER,
-                                    TokenType.LESS_EQ, TokenType.GREATER_EQ):
+                                   TokenType.LESS_EQ, TokenType.GREATER_EQ):
             op = self.consume(self.peek().type)
             right = self.add_expr()
             node = Binary(node, op.value, right)
         return node
 
-    # add_expr -> mult_expr ( (PLUS | MINUS) mult_expr )*
     def add_expr(self):
         node = self.mult_expr()
         while self.peek().type in (TokenType.PLUS, TokenType.MINUS):
@@ -150,7 +134,6 @@ class Parser:
             node = Binary(node, op.value, right)
         return node
 
-    # mult_expr -> factor ( (STAR | SLASH) factor )*
     def mult_expr(self):
         node = self.factor()
         while self.peek().type in (TokenType.STAR, TokenType.SLASH):
@@ -158,17 +141,13 @@ class Parser:
             right = self.factor()
             node = Binary(node, op.value, right)
         return node
-    
-    # parse_list_literal -> '[' (assignment_expr (',' assignment_expr)*)? ']'
+
     def parse_list_literal(self):
         elements = []
         self.consume(TokenType.LEFT_BRACKET)  # Consume '['
-        # Handle empty list case
         if self.peek().type == TokenType.RIGHT_BRACKET:
             self.consume(TokenType.RIGHT_BRACKET)
             return ListLiteral(elements)
-        
-        # Parse list elements separated by commas.
         while True:
             elem = self.assignment_expr()
             elements.append(elem)
@@ -179,10 +158,42 @@ class Parser:
         self.consume(TokenType.RIGHT_BRACKET)  # Consume ']'
         return ListLiteral(elements)
 
-    def factor(self):
-        # Parse the primary expression
-        token = self.peek()
+    def parse_arguments(self):
+        """Helper to parse comma-separated arguments within parentheses."""
+        args = []
+        self.consume(TokenType.LEFT_PAREN)  # Consume '('
+        if self.peek().type != TokenType.RIGHT_PAREN:
+            args.append(self.assignment_expr())
+            while self.peek().type == TokenType.COMMA:
+                self.consume(TokenType.COMMA)
+                args.append(self.assignment_expr())
+        self.consume(TokenType.RIGHT_PAREN)  # Consume ')'
+        return args
 
+    def parse_postfix(self, node):
+        """Helper to handle postfix operators: function calls, member access, and list indexing."""
+        while self.peek().type in (TokenType.LEFT_PAREN, TokenType.DOT, TokenType.LEFT_BRACKET):
+            if self.peek().type == TokenType.LEFT_PAREN:
+                args = self.parse_arguments()
+                node = Call(node, args)
+            elif self.peek().type == TokenType.DOT:
+                self.consume(TokenType.DOT)  # Consume '.'
+                member_token = self.consume(TokenType.IDENTIFIER)
+                member_name = member_token.value
+                if self.peek().type == TokenType.LEFT_PAREN:
+                    args = self.parse_arguments()
+                    node = MemberCall(node, member_name, args)
+                else:
+                    raise SyntaxError("Expected '(' after member name for method call")
+            elif self.peek().type == TokenType.LEFT_BRACKET:
+                self.consume(TokenType.LEFT_BRACKET)
+                index_expr = self.assignment_expr()
+                self.consume(TokenType.RIGHT_BRACKET)
+                node = ListAccess(node, index_expr)
+        return node
+
+    def factor(self):
+        token = self.peek()
         if token.type == TokenType.NUMBER:
             self.consume(TokenType.NUMBER)
             node = Number(token.value)
@@ -203,7 +214,7 @@ class Parser:
             node = self.or_expr()
             self.consume(TokenType.RIGHT_PAREN)
         elif token.type == TokenType.LEFT_BRACKET:
-            node = self.parse_list_literal()  # Already implemented for list literals.
+            node = self.parse_list_literal()
         elif token.type == TokenType.MINUS:
             op = self.consume(TokenType.MINUS)
             right = self.factor()
@@ -214,45 +225,4 @@ class Parser:
             node = Unary(op.value, right)
         else:
             raise SyntaxError(f"Unexpected token: {token}")
-        
-        # Now handle any postfix operators in a loop.
-        while self.peek().type in (TokenType.LEFT_PAREN, TokenType.DOT, TokenType.LEFT_BRACKET):
-            if self.peek().type == TokenType.LEFT_PAREN:
-                # Direct function call: e.g., add(2,3)
-                self.consume(TokenType.LEFT_PAREN)
-                arguments = []
-                if self.peek().type != TokenType.RIGHT_PAREN:
-                    arguments.append(self.assignment_expr())
-                    while self.peek().type == TokenType.COMMA:
-                        self.consume(TokenType.COMMA)
-                        arguments.append(self.assignment_expr())
-                self.consume(TokenType.RIGHT_PAREN)
-                node = Call(node, arguments)
-            elif self.peek().type == TokenType.DOT:
-                # Member call: e.g., myList.push_back(5)
-                self.consume(TokenType.DOT)  # Consume the dot.
-                member_token = self.consume(TokenType.IDENTIFIER)  # The member name.
-                member_name = member_token.value
-                if self.peek().type == TokenType.LEFT_PAREN:
-                    self.consume(TokenType.LEFT_PAREN)
-                    arguments = []
-                    if self.peek().type != TokenType.RIGHT_PAREN:
-                        arguments.append(self.assignment_expr())
-                        while self.peek().type == TokenType.COMMA:
-                            self.consume(TokenType.COMMA)
-                            arguments.append(self.assignment_expr())
-                    self.consume(TokenType.RIGHT_PAREN)
-                    node = MemberCall(node, member_name, arguments)
-                else:
-                    raise SyntaxError("Expected '(' after member name for method call")
-            elif self.peek().type == TokenType.LEFT_BRACKET:
-                # List access: e.g., myList[2]
-                self.consume(TokenType.LEFT_BRACKET)
-                index_expr = self.assignment_expr()
-                self.consume(TokenType.RIGHT_BRACKET)
-                node = ListAccess(node, index_expr)
-            else:
-                break
-
-        return node
-
+        return self.parse_postfix(node)
